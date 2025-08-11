@@ -8,6 +8,7 @@ import { FaUser, FaLock, FaEye, FaEyeSlash, FaEnvelope, FaPhoneAlt } from "react
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import { getDeviceId } from "../lib/deviceId";
 
 // Schema validation với Yup
 const signupValidation = Yup.object({
@@ -51,6 +52,11 @@ export default function Signup({ csrfToken }) {
     try {
       setStatus("Đang đăng ký...");
       console.log("Submitting signup:", values); // Debug
+      
+      // Generate deviceId for the user
+      const deviceId = getDeviceId();
+      console.log("Generated deviceId:", deviceId); // Debug
+      
       const { data } = await axios.post(`${baseUrl}/api/auth/signup`, {
         name: values.username,
         email: values.email,
@@ -58,6 +64,7 @@ export default function Signup({ csrfToken }) {
         password: values.password,
         conf_password: values.confirm_password,
         agree: values.agree,
+        deviceId: deviceId,
       });
       console.log("Signup response:", data); // Debug
       setSuccess(data.message);

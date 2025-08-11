@@ -59,10 +59,41 @@ export default function UserProfile() {
         dateOfBirth: userData.dateOfBirth
           ? new Date(userData.dateOfBirth).toISOString()
           : null,
+        role: userData.role || "user"
       });
     } catch (error) {
       console.error("Error fetching user data:", error);
       toast.error("Có lỗi khi lấy thông tin tài khoản!");
+    }
+  };
+
+  // Function để cập nhật vai trò người dùng
+  const updateUserRole = async (newRole) => {
+    if (!session || !session.user.id) return;
+    try {
+      const res = await axios.put(`/api/user/${session.user.id}`, { role: newRole });
+      setUserRole(newRole);
+      toast.success("Cập nhật vai trò thành công!");
+      return res.data;
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      toast.error("Có lỗi khi cập nhật vai trò!");
+      return null;
+    }
+  };
+
+  // Function để kiểm tra và cập nhật vai trò từ database
+  const checkAndUpdateRole = async () => {
+    if (!session || !session.user.id) return;
+    try {
+      const res = await axios.get(`/api/user/${session.user.id}`);
+      const userData = res.data;
+      if (userData.role !== userRole) {
+        setUserRole(userData.role || "user");
+        console.log("Vai trò đã được cập nhật từ database:", userData.role);
+      }
+    } catch (error) {
+      console.error("Error checking user role:", error);
     }
   };
 
@@ -71,6 +102,21 @@ export default function UserProfile() {
       fetchUserData();
     }
   }, [session]);
+
+  // Kiểm tra vai trò định kỳ mỗi 30 giây
+  useEffect(() => {
+    if (session && session.user) {
+      const interval = setInterval(checkAndUpdateRole, 30000); // 30 giây
+      return () => clearInterval(interval);
+    }
+  }, [session, userRole]);
+
+  // Kiểm tra vai trò khi chuyển tab
+  useEffect(() => {
+    if (session && session.user && selectedTab === "all-users") {
+      checkAndUpdateRole();
+    }
+  }, [selectedTab, session]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -476,7 +522,10 @@ export default function UserProfile() {
               <p className="text-gray-600">Quản lý danh sách người dùng</p>
             </div>
             <div className="bg-white rounded-3xl p-8 md:p-12 shadow-lg border border-gray-100">
-              <AllUsersList />
+              <AllUsersList 
+                onRoleUpdate={updateUserRole}
+                currentUserId={session.user.id}
+              />
             </div>
           </div>
         );

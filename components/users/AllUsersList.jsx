@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Users, Search, Filter, MoreVertical, Eye, Edit, Trash2, Mail, Phone, MapPin, Calendar, UserCheck, Save, X, User } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-export default function AllUsersList() {
+export default function AllUsersList({ onRoleUpdate, currentUserId }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,13 +19,57 @@ export default function AllUsersList() {
   const [editingRole, setEditingRole] = useState(false);
   const [newRole, setNewRole] = useState('');
   const [imageErrors, setImageErrors] = useState(new Set());
+  const [currentUserIdFromAPI, setCurrentUserIdFromAPI] = useState(null);
+  const [currentUserRole, setCurrentUserRole] = useState('user');
+  const [roleChangeNotification, setRoleChangeNotification] = useState(null);
 
   const pageSize = 10;
+
+  // Function để refresh vai trò ngay lập tức
+  const refreshCurrentUserRole = useCallback(async () => {
+    if (!currentUserIdFromAPI) return;
+    
+    try {
+      const response = await axios.get(`/api/user/${currentUserIdFromAPI}`);
+      const currentUser = response.data;
+      
+      if (currentUser.role !== currentUserRole) {
+        const oldRole = currentUserRole;
+        setCurrentUserRole(currentUser.role);
+        
+        // Hiển thị thông báo thay đổi vai trò
+        setRoleChangeNotification({
+          oldRole,
+          newRole: currentUser.role,
+          timestamp: new Date()
+        });
+        
+        if (onRoleUpdate) {
+          onRoleUpdate(currentUser.role);
+        }
+        console.log('Vai trò đã được cập nhật real-time:', currentUser.role);
+        
+        // Tự động ẩn thông báo sau 5 giây
+        setTimeout(() => {
+          setRoleChangeNotification(null);
+        }, 5000);
+      }
+    } catch (error) {
+      console.error('Error refreshing current user role:', error);
+    }
+  }, [currentUserIdFromAPI, currentUserRole, onRoleUpdate]);
 
   const checkAdminStatus = async () => {
     try {
       const response = await axios.get('/api/user/check-admin');
       setIsAdmin(response.data.isAdmin);
+      // Lấy ID và vai trò của người dùng hiện tại từ response
+      if (response.data.currentUserId) {
+        setCurrentUserIdFromAPI(response.data.currentUserId);
+      }
+      if (response.data.role) {
+        setCurrentUserRole(response.data.role);
+      }
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
@@ -52,11 +96,34 @@ export default function AllUsersList() {
     checkAdminStatus();
   }, []);
 
+  // Khởi tạo vai trò ngay khi component mount
+  useEffect(() => {
+    if (currentUserIdFromAPI && !checkingAuth) {
+      refreshCurrentUserRole();
+    }
+  }, [currentUserIdFromAPI, checkingAuth, refreshCurrentUserRole]);
+
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
     }
   }, [currentPage, isAdmin]);
+
+  // Refresh vai trò khi component mount và khi có thay đổi
+  useEffect(() => {
+    if (isAdmin && currentUserIdFromAPI) {
+      refreshCurrentUserRole();
+    }
+  }, [isAdmin, currentUserIdFromAPI, refreshCurrentUserRole]);
+
+  // Kiểm tra vai trò định kỳ mỗi 15 giây để cập nhật real-time
+  useEffect(() => {
+    if (isAdmin && currentUserIdFromAPI) {
+      const interval = setInterval(refreshCurrentUserRole, 15000); // 15 giây
+      
+      return () => clearInterval(interval);
+    }
+  }, [isAdmin, currentUserIdFromAPI, refreshCurrentUserRole]);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -116,6 +183,13 @@ export default function AllUsersList() {
       
       setEditingRole(false);
       toast.success('Cập nhật vai trò thành công!');
+      
+      // Nếu đang cập nhật vai trò của chính mình, thông báo cho parent component
+      if (onRoleUpdate && selectedUser.id === currentUserIdFromAPI) {
+        onRoleUpdate(newRole);
+        // Refresh vai trò ngay lập tức
+        setTimeout(refreshCurrentUserRole, 100);
+      }
     } catch (error) {
       console.error('Error updating user role:', error);
       toast.error('Có lỗi khi cập nhật vai trò!');
@@ -250,6 +324,40 @@ export default function AllUsersList() {
 
   return (
     <div className="space-y-6">
+      {/* Role Change Notification */}
+      {roleChangeNotification && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">
+                Vai trò đã được cập nhật
+              </h3>
+              <div className="mt-1 text-sm text-blue-700">
+                Vai trò của bạn đã thay đổi từ <span className="font-semibold">{roleChangeNotification.oldRole}</span> thành <span className="font-semibold">{roleChangeNotification.newRole}</span>
+              </div>
+              <div className="mt-2 text-xs text-blue-600">
+                {roleChangeNotification.timestamp.toLocaleTimeString('vi-VN')}
+              </div>
+            </div>
+            <div className="ml-auto pl-3">
+              <button
+                onClick={() => setRoleChangeNotification(null)}
+                className="inline-flex text-blue-400 hover:text-blue-600"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

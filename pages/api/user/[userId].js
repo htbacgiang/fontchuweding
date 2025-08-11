@@ -19,10 +19,21 @@ export default async function handler(req, res) {
       }
     case "PUT":
       try {
-        const { name, phone, email, image, gender, dateOfBirth } = req.body;
+        const { name, phone, email, image, gender, dateOfBirth, role } = req.body;
+        
+        // Tạo object cập nhật với các trường có sẵn
+        const updateFields = {};
+        if (name !== undefined) updateFields.name = name;
+        if (phone !== undefined) updateFields.phone = phone;
+        if (email !== undefined) updateFields.email = email;
+        if (image !== undefined) updateFields.image = image;
+        if (gender !== undefined) updateFields.gender = gender;
+        if (dateOfBirth !== undefined) updateFields.dateOfBirth = dateOfBirth;
+        if (role !== undefined) updateFields.role = role;
+        
         const updatedUser = await User.findByIdAndUpdate(
           userId,
-          { name, phone, email, image, gender, dateOfBirth },
+          updateFields,
           { new: true, runValidators: true }
         );
         if (!updatedUser) {

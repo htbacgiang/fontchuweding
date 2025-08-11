@@ -10,9 +10,9 @@ const PricingPage = ({ onClose }) => {
 
   const plans = [
     {
-      name: 'Miễn Phí (Theo Tháng)',
+      name: 'Miễn Phí',
       price: 0,
-      duration: '', // No duration suffix
+      duration: '',
       features: [
         { text: 'Nhập tên cô dâu chú rể', available: true },
         { text: 'Thêm font vào danh sách yêu thích', available: true },
@@ -23,30 +23,14 @@ const PricingPage = ({ onClose }) => {
         { text: 'Hỗ trợ 24/7', available: true },
       ],
       buttonText: 'Thử Ngay',
-      buttonAction: () => router.push('/signup/free'),
+      buttonAction: () => router.push('/'),
       buttonDisabled: false,
     },
+    
     {
-      name: 'Premium (Theo tháng)',
-      price: 50000,
-      duration: 'tháng', // Only this plan shows /tháng
-      features: [
-        { text: 'Nhập và chỉnh sửa tên cô dâu chú rể', available: true },
-        { text: 'Thêm và quản lý danh sách yêu thích', available: true },
-        { text: 'Hiển thị tên font đầy đủ', available: true },
-        { text: 'Tải font về máy (giới hạn 50 font/tháng)', available: true },
-        { text: 'Tải hình ảnh (giới hạn 100 ảnh/tháng)', available: true },
-        { text: 'Tạo ảnh danh sách font yêu thích', available: true },
-        { text: 'Hỗ trợ 24/7', available: true },
-      ],
-      buttonText: 'Đăng Ký Ngay',
-      buttonAction: () => router.push('/payment/premium-monthly'),
-      buttonDisabled: false,
-    },
-    {
-      name: 'Premium (Vĩnh viễn)',
+      name: 'Premium Vĩnh Viễn',
       price: 500000,
-      duration: '', // No duration suffix
+      duration: '',
       features: [
         { text: 'Nhập và chỉnh sửa tên cô dâu chú rể', available: true },
         { text: 'Thêm và quản lý danh sách yêu thích', available: true },
@@ -57,7 +41,7 @@ const PricingPage = ({ onClose }) => {
         { text: 'Hỗ trợ 24/7', available: true },
       ],
       buttonText: 'Đăng Ký Ngay',
-      buttonAction: () => router.push('/payment/premium-lifetime'),
+      buttonAction: () => router.push('/'),
       buttonDisabled: false,
     },
   ];
@@ -93,47 +77,35 @@ const PricingPage = ({ onClose }) => {
 
         <div className="relative z-10 max-w-7xl mx-auto h-full flex flex-col">
           <div className="text-center mb-8">
-
             <h1 className="text-2xl md:text-2xl font-bold text-white mb-2 tracking-tight">
               Bảng Giá Dịch Vụ
             </h1>
             <p className="text-sm md:text-base text-white/90 max-w-3xl mx-auto leading-relaxed">
-              Chọn Gói Miễn Phí hoặc Premium (Theo Tháng/Vĩnh Viễn) để thiết kế font chữ đám cưới!
+              Chọn Gói Miễn Phí hoặc Premium Vĩnh Viễn để thiết kế font chữ đám cưới!
             </p>
           </div>
 
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 max-w-6xl mx-auto">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
             {plans.length > 0 ? ( 
               plans.map((plan, index) => (
                 <div
                   key={index}
-                  className={`relative group ${index === 1
-                      ? 'lg:scale-105 lg:-translate-y-2 z-20'
-                      : 'lg:scale-100'
-                    }`}
+                  className="relative group"
                 >
-                  {/* Popular badge for middle card */}
-                  {index === 1 && (
-                    <div className="absolute -top-3 lg:-top-4 left-1/2 transform -translate-x-1/2 z-30">
-                    </div>
-                  )}
-
-                  <div className={`relative bg-white/95 backdrop-blur-xl rounded-2xl lg:rounded-3xl p-4 lg:p-6 shadow-xl lg:shadow-2xl transition-all duration-300 hover:shadow-2xl lg:hover:shadow-3xl hover:-translate-y-2 ${index === 1
+                  <div className={`relative bg-white/95 backdrop-blur-xl rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-xl lg:shadow-2xl transition-all duration-300 hover:shadow-2xl lg:hover:shadow-3xl hover:-translate-y-2 h-full ${index === 1
                       ? 'border-2 border-pink-400 shadow-pink-500/25'
                       : 'border border-white/20'
                     }`}>
 
-                 
-
-                    <h3 className="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-4 text-center">{plan.name}</h3>
+                    <h3 className="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6 text-center">{plan.name}</h3>
 
                     {/* Price section */}
-                    <div className="text-center mb-4 lg:mb-6">
+                    <div className="text-center mb-6 lg:mb-8">
                       <div className="flex items-baseline justify-center gap-1 lg:gap-2">
-                        <span className="text-3xl md:text-4xl font-black bg-gradient-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent">
+                        <span className="text-4xl md:text-5xl font-black bg-gradient-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent">
                           {plan.price === 0 ? '0' : plan.price.toLocaleString('vi-VN')}
                         </span>
-                        <span className="text-lg lg:text-xl xl:text-2xl font-semibold text-gray-600">₫</span>
+                        <span className="text-xl lg:text-2xl xl:text-3xl font-semibold text-gray-600">₫</span>
 
                         {plan.duration && (
                           <span className="text-sm lg:text-base xl:text-lg font-medium text-gray-500">/{plan.duration}</span>
@@ -143,7 +115,7 @@ const PricingPage = ({ onClose }) => {
 
                     {/* CTA Button */}
                     <button
-                      className={`w-full py-2 lg:py-3 px-4 lg:px-6 rounded-xl lg:rounded-2xl font-bold text-sm lg:text-base xl:text-lg transition-all duration-300 transform hover:scale-105 ${plan.buttonDisabled
+                      className={`w-full py-3 lg:py-4 px-6 lg:px-8 rounded-xl lg:rounded-2xl font-bold text-base lg:text-lg xl:text-xl transition-all duration-300 transform hover:scale-105 ${plan.buttonDisabled
                           ? 'bg-gray-400 cursor-not-allowed'
                           : 'bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1'
                         }`}
@@ -155,20 +127,20 @@ const PricingPage = ({ onClose }) => {
                     </button>
 
                     {/* Features list */}
-                    <ul className="mt-4 lg:mt-5 space-y-2 lg:space-y-3">
+                    <ul className="mt-6 lg:mt-8 space-y-3 lg:space-y-4">
                       {plan.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start space-x-3 lg:space-x-4" role="listitem">
-                          <span className={`flex-shrink-0 w-5 h-5 lg:w-6 lg:h-6 xl:w-7 xl:h-7 rounded-full flex items-center justify-center shadow-sm ${feature.available
+                          <span className={`flex-shrink-0 w-6 h-6 lg:w-7 lg:h-7 rounded-full flex items-center justify-center shadow-sm ${feature.available
                               ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white'
                               : 'bg-gradient-to-r from-red-400 to-pink-500 text-white'
                             }`}>
                             {feature.available ? (
-                              <FaCheck size={10} className="lg:w-3 lg:h-3 xl:w-3 xl:h-3" />
+                              <FaCheck size={12} className="lg:w-4 lg:h-4" />
                             ) : (
-                              <FaTimes size={10} className="lg:w-3 lg:h-3 xl:w-3 xl:h-3" />
+                              <FaTimes size={12} className="lg:w-4 lg:h-4" />
                             )}
                           </span>
-                          <span className={`text-base text-gray-700 leading-relaxed ${!feature.available ? 'line-through text-gray-400' : ''}`}>
+                          <span className={`text-base lg:text-lg text-gray-700 leading-relaxed ${!feature.available ? 'line-through text-gray-400' : ''}`}>
                             {feature.text}
                           </span>
                         </li>
@@ -176,8 +148,8 @@ const PricingPage = ({ onClose }) => {
                     </ul>
 
                     {/* Decorative elements */}
-                    <div className="absolute top-2 right-2 lg:top-4 lg:right-4 w-8 h-8 lg:w-12 lg:h-12 xl:w-16 xl:h-16 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full opacity-20"></div>
-                    <div className="absolute bottom-2 left-2 lg:bottom-4 lg:left-4 w-6 h-6 lg:w-8 lg:h-8 xl:w-12 xl:h-12 bg-gradient-to-br from-rose-100 to-pink-100 rounded-full opacity-20"></div>
+                    <div className="absolute top-4 right-4 lg:top-6 lg:right-6 w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full opacity-20"></div>
+                    <div className="absolute bottom-4 left-4 lg:bottom-6 lg:left-6 w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-br from-rose-100 to-pink-100 rounded-full opacity-20"></div>
                   </div>
                 </div>
               ))

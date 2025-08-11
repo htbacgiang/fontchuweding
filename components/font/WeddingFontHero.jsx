@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 const cardsCol1 = [
   { label: "Giao diện thân thiện", value: "Dễ dùng", color: "bg-gradient-to-br from-pink-50 to-pink-100 border-pink-200" },
-  { label: "Preview font nhanh", value: "100+ Font nghệ thuật", color: "bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200" },
+  { label: "Preview font nhanh", value: "5000+ Font nghệ thuật", color: "bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200" },
   { label: "Tải ảnh preview", value: "JPG/PNG", color: "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200" },
 ];
 const cardsCol2 = [

@@ -27,7 +27,8 @@ export default async function handler(req, res) {
     
     return res.status(200).json({ 
       isAdmin,
-      role: user.role 
+      role: user.role,
+      currentUserId: session.user.id
     });
   } catch (error) {
     console.error("Error checking admin status:", error);

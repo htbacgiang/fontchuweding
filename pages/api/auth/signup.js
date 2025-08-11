@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+// Removed bcrypt import since User model handles password hashing
 import validator from "validator";
 import db from "../../../utils/db";
 import User from "../../../models/User";
@@ -14,10 +14,10 @@ export default async function handler(req, res) {
     console.log("Starting registration process...");
 
     // Parse request body
-    const { name, email, password, conf_password, phone, agree } = req.body;
+    const { name, email, password, conf_password, phone, agree, deviceId } = req.body;
 
     // Kiểm tra đầu vào
-    if (!name || !email || !phone || !password || !conf_password) {
+    if (!name || !email || !phone || !password || !conf_password || !deviceId) {
       return res.status(400).json({ message: "Vui lòng điền hết các trường." });
     }
     if (!validator.isEmail(email)) {
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     await db.connectDb();
     console.log("DB connected");
 
-    // Kiểm tra email và phone
+    // Kiểm tra email, phone và deviceId
     if (await User.findOne({ email })) {
       return res.status(400).json({ message: "Địa chỉ email đã tồn tại." });
     }
@@ -57,16 +57,19 @@ export default async function handler(req, res) {
         .status(400)
         .json({ message: "Số điện thoại đã được đăng ký." });
     }
+    if (await User.findOne({ deviceId })) {
+      return res
+        .status(400)
+        .json({ message: "Device đã được sử dụng để đăng ký." });
+    }
 
-    // Mã hóa mật khẩu
-    const cryptedPassword = await bcrypt.hash(password, 12);
-
-    // Tạo người dùng mới
+    // Tạo người dùng mới (mật khẩu sẽ được hash trong User model pre-save hook)
     const newUser = new User({
+      deviceId,
       name,
       email,
       phone,
-      password: cryptedPassword,
+      password: password, // Để User model tự hash
       agree, // Lưu giá trị boolean
     });
     const addedUser = await newUser.save();
